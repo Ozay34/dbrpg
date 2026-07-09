@@ -57,7 +57,7 @@ class CardImage(tk.Label):
                 aspects=aspects or [],
                 effects=effects or [],
                 tools=tools
-            ), scale=self.scale)
+            ), scale=self.scale, unsafe=True)
             return ImageTk.PhotoImage(Image.open(BytesIO(png)))
 
         self.card = card

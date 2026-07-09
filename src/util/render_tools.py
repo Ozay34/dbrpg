@@ -5,7 +5,7 @@ from tkinter import font
 
 from PIL import ImageFont
 
-from util.paths import resolve_path
+from util.paths import resolve_path, EXE
 
 FONT_DIR = Path(resolve_path("assets/fonts/"))
 ROMAN_NUMERALS = {
@@ -44,6 +44,14 @@ def to_roman_numerals(val):
 
     return numerals
 
+def get_card_art(card):
+    files = list(resolve_path("assets/card_art/").glob(f"{card.name}.*"))
+    if EXE:
+        files += list(Path("assets/card_art").resolve().glob(f"{card.name}.*"))
+    if len(files) == 0:
+        return ""
+
+    return f'<image width="2.5in" height="3.5in" href="{files[0].as_uri()}" />'
 
 class TextBounds:
 

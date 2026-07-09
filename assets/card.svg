@@ -21,6 +21,8 @@
           y="0.125in"
           ry="0.0625in" />
 
+    {{ tools.get_card_art(card) }}
+
     <g id="tier-group">
         {% set tier_numerals = tools.to_roman_numerals(card.tier) %}
         {% set tier = tools.TextBounds(tier_numerals, 48, 'cinzel.black.otf') %}

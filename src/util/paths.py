@@ -1,10 +1,12 @@
 import os
 import sys
+from pathlib import Path
+
+
+EXE = getattr(sys, 'frozen', False)
 
 
 def resolve_path(path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, path)
+    if EXE:
+        return Path(sys._MEIPASS) / path
+    return Path.cwd() / path

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg width="2.5in"
+     height="3.5in"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:svg="http://www.w3.org/2000/svg">
+
+    <rect id="background"
+          fill="#ffffff"
+          width="2.5in"
+          height="3.5in"
+          x="0"
+          y="0"
+          ry="0.125in" />
+    <rect id="primary"
+          fill="{{ card.color }}"
+          opacity="0.3"
+          width="2.25in"
+          height="3.25in"
+          x="0.125in"
+          y="0.125in"
+          ry="0.0625in" />
+
+    <g id="tier-group">
+        {% set tier_numerals = tools.to_roman_numerals(card.tier) %}
+        {% set tier = tools.TextBounds(tier_numerals, 48, 'cinzel.black.otf') %}
+        <rect width="{{ tier.width + 12 }}"
+              height="48"
+              fill="{{ card.color }}"
+              stroke="{{ card.color }}"
+              x="8"
+              y="8"
+              ry="6" />
+        <text id="tier"
+              font-size="{{ tier.size }}"
+              font-family="Cinzel-Black"
+              fill="#ffffff"
+              x="13.5"
+              y="29.5"
+              dominant-baseline="middle">{{ tier.text }}</text>
+    </g>
+
+    <g id="aspect-group">
+        {% for aspect_entry in aspects %}
+            {% set aspect = tools.TextBounds(aspect_entry.name.upper(), 8, 'cinzel.bold.otf') %}
+            <rect fill="{{ aspect_entry.color }}"
+                  width="{{ aspect.width + 16 }}"
+                  height="12"
+                  x="8"
+                  y="{{ 60 + 14*(loop.index-1) }}"
+                  ry="6" />
+            <circle fill="{{ tools.contrast(aspect_entry.color) }}"
+                    r="3"
+                    cx="14"
+                    cy="{{ 66 + 14*(loop.index-1) }}"/>
+            <text font-family="Cinzel-Bold"
+                  font-size="{{ aspect.size }}"
+                  fill="{{ tools.contrast(aspect_entry.color) }}"
+                  x="20"
+                  y="{{ 66 + 14*(loop.index-1) }}"
+                  dominant-baseline="middle">{{ aspect.text }}</text>
+        {% endfor %}
+    </g>
+
+    {% set name = tools.TextBounds.fit(card.name, 210, 28, 'cinzel.decorative-bold.otf') %}
+    <rect width="224"
+          height="36"
+          x="8"
+          y="292"
+          fill="{{ card.color }}"
+          stroke="{{ card.color }}"
+          ry="6" />
+    <text id="name"
+          font-size="{{ name.size }}"
+          font-family="CinzelDecorative-Bold"
+          fill="#ffffff"
+          x="120"
+          y="309"
+          text-anchor="middle"
+          dominant-baseline="middle">{{ name.text }}</text>
+
+    {% set spacing = namespace(y=0) %}
+    {% for condition_keyword, effect in effects %}
+        {% set condition = tools.TextBounds(condition_keyword.keyword, 10, 'cinzel.bold.otf') %}
+        {% set lines = effect.split("\n") %}
+        {% set line = tools.TextBounds(lines[0], 8, 'cormorant.regular.otf') %}
+        {% set main_width = 200 if lines|length > 1 else (condition.width+4, line.width)|max %}
+        {% if line.text|length == 0 and lines|length == 1 %}
+            <path d="M 16,{{ 283.5-10*(lines|length-1)-spacing.y }} v -6 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 6 q 0,4 -4,4 h {{ -condition.width }} q -4,0 -4,-4 z"
+                  fill="#009ae0"
+                  stroke="#006ea1" />
+            <text font-size="{{ condition.size }}"
+                  font-family="Cinzel-Bold"
+                  fill="#ffffff"
+                  x="20"
+                  y="{{ 274-10*(lines|length-1)-spacing.y }}"
+                  dominant-baseline="hanging">{{ condition.text }}</text>
+            {% set spacing.y = spacing.y + 22 %}
+        {% else %}
+            <path d="M 16,{{ 273-10*(lines|length-1)-spacing.y }} v {{ 10*lines|length }} q 0,4 4,4 h {{ main_width }} q 4,0 4,-4 v {{ 4-10*lines|length }} q 0,-4 -4,-4 h {{ condition.width-main_width-4 }}"
+                  fill="#ffffff"
+                  stroke="#858585"
+                  fill-opacity="0.5" />
+            <path d="M 16,{{ 273.5-10*(lines|length-1)-spacing.y }} v -10 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 10"
+                  fill="#009ae0"
+                  stroke="#006ea1" />
+            <text font-size="{{ condition.size }}"
+                  font-family="Cinzel-Bold"
+                  fill="#ffffff"
+                  x="20"
+                  y="{{ 260-10*(lines|length-1)-spacing.y }}"
+                  dominant-baseline="hanging">{{ condition.text }}</text>
+            <text font-size="8"
+                  font-family="Cormorant"
+                  fill="#000000"
+                  y="{{ 282-10*(lines|length-1)-spacing.y }}">
+                {% for line in lines %}
+                    <tspan x="19" dy="{{ 0 if loop.first else 10 }}">{{ line }}</tspan>
+                {% endfor %}
+            </text>
+            {% set spacing.y = spacing.y + 10*lines|length + 22 %}
+        {% endif %}
+    {% endfor %}
+
+    {#
+    <text id="effect"
+          font-size="0.1171875in"
+          fill="#000000"
+          x="0.25in"
+          y="{{ 2.90625 - 0.140625 * card.effect.split('\n')|length }}in"
+          text-anchor="start"
+          dominant-baseline="auto">
+        <tspan x="0.25in" />
+        {% for line in card.tokenize_effect() %}
+            {% for token in line %}
+                <tspan fill="{{ token[1] }}">{{ token[0]|e }}</tspan>
+            {% endfor %}
+            {% if not loop.last %}
+                <tspan x="0.25in" dy="0.140625in" />
+            {% endif %}
+        {% endfor %}
+    </text>
+    #}
+</svg>

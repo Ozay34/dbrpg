@@ -167,7 +167,7 @@ class DeckEditor(EditorWindow):
         self.card_widgets.grid(row=1, column=0, columnspan=2, padx=10, pady=(0,10))
 
     def _new(self):
-        return DeckCard()
+        return Deck()
 
     def _title(self, deck):
         return f"Edit Deck - {deck.name}" if deck.name else "New Deck"

@@ -99,8 +99,8 @@ class DeckEditor(EditorWindow):
             self.refresh()
             self._window.lift()
         def handle_remove():
-            card = self.card_widgets.selected.card
-            self._deck.cards.remove(card)
+            card = self.card_widgets.selected.deck_card.card
+            DeckCard.delete().where((DeckCard.card == card) & (DeckCard.deck == self._deck)).execute()
             self.card_widgets.select(None)
             self.refresh()
         selection_panel = tk.Frame(edit_frame)

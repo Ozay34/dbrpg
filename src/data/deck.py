@@ -10,6 +10,12 @@ class Deck(BaseModel):
     id = AutoField(primary_key=True)
     name = CharField(max_length=255, default="")
 
+    @property
+    def unique_cards(self):
+        return (Card.select(Card).distinct()
+                .join(DeckCard)
+                .where(DeckCard.deck == self))
+
 @auto_create
 class DeckCard(BaseModel):
 

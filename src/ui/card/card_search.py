@@ -1,16 +1,14 @@
-import json
 import tkinter as tk
 from contextlib import suppress
 from tkinter import TclError, messagebox
-from tkinter.filedialog import asksaveasfile
 
 from peewee import fn
-from playhouse.shortcuts import model_to_dict
 
 from data.card import Aspect, Card, CardAspect
 from ui.card.card_image import CardImage
 from ui.components.page_grid import PageGrid
 from ui.components.view_frame import ViewFrame
+from ui.export.export_menu import ExportMenu
 
 
 class AspectList(tk.Menubutton):
@@ -21,7 +19,7 @@ class AspectList(tk.Menubutton):
         self.on_change = on_change
         self.selections = {}
         self.menu = tk.Menu(self, tearoff=0)
-        self["menu"] = self.menu
+        self.config(menu=self.menu)
 
     def refresh(self):
         for aspect in Aspect.select():
@@ -94,34 +92,24 @@ class CardSearch(ViewFrame):
         highest_tier_field = tk.Spinbox(search_frame, from_=0, to=Card.HIGHEST_TIER, width=5, textvariable=self.highest_tier_var)
         highest_tier_field.grid(column=7, row=0)
 
-        def export(obj, filename="cards"):
-            file = asksaveasfile(mode="w", initialfile=filename, defaultextension=".json", filetypes=[("JSON", "*.json")])
-            if file is None:
-                return
-            file.write(json.dumps(obj, indent=4))
-            file.close()
-        def handle_export():
-            export([card.export() for card in self._get_search()])
-        export_button = tk.Button(search_frame, text="Export Search", command=handle_export)
-        export_button.grid(column=8, row=0, padx=(30, 0))
+        export_search = ExportMenu(search_frame, lambda: self.search, lambda: self.search_var.get(), text="Export Search")
+        export_search.grid(column=8, row=0, padx=(30, 0))
 
         def handle_add_to_deck():
-            deck_editor.add(self.card_widgets.selected.card)
+            deck_editor.add(self.selected)
         def handle_edit():
-            card_editor.open(self.card_widgets.selected.card)
+            card_editor.open(self.selected)
         def handle_delete():
-            if messagebox.askyesno("Delete", f"Are you sure you want to delete {self.card_widgets.selected.card.name}?"):
-                self.card_widgets.selected.card.delete_instance()
+            if messagebox.askyesno("Delete", f"Are you sure you want to delete {self.selected.name}?"):
+                self.selected.delete_instance()
                 self.refresh()
-        def handle_export_selected():
-            export([self.card_widgets.selected.card.export()], self.card_widgets.selected.card.name)
         self.selection_panel = tk.Frame(search_frame)
         add_to_deck = tk.Button(self.selection_panel, text="Add To Deck", command=handle_add_to_deck)
         add_to_deck.grid(row=0, column=0, padx=2)
         self.selected_label = tk.Label(self.selection_panel, text="")
         self.selected_label.grid(row=0, column=1, padx=2, sticky="e")
-        export_selected_button = tk.Button(self.selection_panel, text="Export", command=handle_export_selected)
-        export_selected_button.grid(row=0, column=2, padx=2)
+        export_selected = ExportMenu(self.selection_panel, lambda: self.selected, lambda: self.selected.name, text="Export")
+        export_selected.grid(row=0, column=2, padx=2)
         edit_button = tk.Button(self.selection_panel, text="Edit", command=handle_edit)
         edit_button.grid(row=0, column=3, padx=2)
         delete_button = tk.Button(self.selection_panel, text="Delete", foreground="red", command=handle_delete)
@@ -176,3 +164,7 @@ class CardSearch(ViewFrame):
             search_query = search_query.where(Aspect.name.not_in(self.exclude_aspect.selected))
 
         return search_query.distinct().order_by(Card.tier, Card.name)
+
+    @property
+    def selected(self):
+        return self.card_widgets.selected.card

@@ -16,6 +16,21 @@ env = Environment(
 )
 template = env.get_template("card.svg")
 
+
+def render_card(card, aspects=None, effects=None, scale=1.0):
+    if card.id and aspects is None:
+        aspects = list(card.aspects)
+    if card.id and effects is None:
+        effects = [(effect.condition, effect.description) for effect in card.effects.order_by(CardEffect.order)]
+    png = cairosvg.svg2png(bytestring=template.render(
+        card=card,
+        aspects=aspects or [],
+        effects=effects or [],
+        tools=tools
+    ), scale=scale, unsafe=True)
+    return Image.open(BytesIO(png))
+
+
 class CardCache:
 
     def __init__(self):
@@ -47,18 +62,7 @@ class CardImage(tk.Label):
     def display(self, card, aspects=None, effects=None):
 
         def render():
-            nonlocal card, aspects, effects
-            if card.id and aspects is None:
-                aspects = list(card.aspects)
-            if card.id and effects is None:
-                effects = [(effect.condition, effect.description) for effect in card.effects.order_by(CardEffect.order)]
-            png = cairosvg.svg2png(bytestring=template.render(
-                card=card,
-                aspects=aspects or [],
-                effects=effects or [],
-                tools=tools
-            ), scale=self.scale, unsafe=True)
-            return ImageTk.PhotoImage(Image.open(BytesIO(png)))
+            return ImageTk.PhotoImage(render_card(card, aspects, effects, self.scale))
 
         self.card = card
 

@@ -8,6 +8,7 @@ from data.deck import Deck, DeckCard
 from ui.card.card_image import CardImage
 from ui.components.editor_window import EditorWindow
 from ui.components.page_grid import PageGrid
+from ui.export.export_menu import ExportMenu
 from util.event_bus import EventBus
 
 
@@ -93,6 +94,8 @@ class DeckEditor(EditorWindow):
         save_button.grid(row=0, column=2, padx=5)
         del_button = tk.Button(edit_frame, text="Delete", command=handle_del)
         del_button.grid(row=0, column=3, padx=5)
+        export_button = ExportMenu(edit_frame, lambda: self._deck.unique_cards, lambda: self._name_var.get(), text="Export")
+        export_button.grid(row=0, column=4, padx=(30, 0))
 
         def handle_edit():
             self._card_editor.open(self.card_widgets.selected.deck_card.card)

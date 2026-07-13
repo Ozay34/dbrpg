@@ -8,7 +8,7 @@ from PIL import ImageTk, Image
 from jinja2 import Environment, FileSystemLoader
 import util.render_tools as tools
 
-from data.card import Card, CardEffect
+from data.card import Card, CardEffect, Aspect, Keyword
 from util.paths import resolve_path
 
 env = Environment(
@@ -35,7 +35,9 @@ class CardCache:
 
     def __init__(self):
         self.cache = {}
-        Card.on_save.subscribe(self.release)
+        Card.on_save.subscribe(lambda card: self.release([card]))
+        Aspect.on_save.subscribe(lambda aspect: self.release(Card.with_aspect(aspect)))
+        Keyword.on_save.subscribe(lambda keyword: self.release(Card.with_keyword(keyword)))
 
     def get(self, card, callback):
         if card.id in self.cache:
@@ -44,9 +46,11 @@ class CardCache:
         self.cache[card.id] = item
         return item
 
-    def release(self, card):
-        if card.id and card.id in self.cache:
-            self.cache.pop(card.id)
+    def release(self, cards):
+        for card in cards:
+            if card.id and card.id in self.cache:
+                self.cache.pop(card.id)
+
 
 class CardImage(tk.Label):
 

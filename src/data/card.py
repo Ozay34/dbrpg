@@ -12,17 +12,28 @@ from util.event_bus import EventBus
 @auto_create
 class Aspect(BaseModel):
 
+    on_save = EventBus()
+
     id = AutoField(primary_key=True)
     name = CharField(max_length=255, default="")
     color = CharField(max_length=7)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        Aspect.on_save.publish(self)
 
 @auto_create
 class Keyword(BaseModel):
 
+    on_save = EventBus()
+
     id = AutoField(primary_key=True)
     keyword = CharField(max_length=255)
     description = TextField(default="")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        Keyword.on_save.publish(self)
 
     @classmethod
     def highlight(cls, line):
@@ -56,6 +67,14 @@ class Card(BaseModel):
                     condition = Keyword.get(keyword=effect_dict["condition"])
                     CardEffect.create(condition=condition, card=card, description=effect_dict["description"], order=i)
                 card.save()
+
+    @classmethod
+    def with_aspect(cls, aspect):
+        return Card.select().distinct().join(CardAspect).where(CardAspect.aspect == aspect)
+
+    @classmethod
+    def with_keyword(cls, keyword):
+        return Card.select().distinct().join(CardEffect).where(CardEffect.condition == keyword)
 
     def export(self):
         return model_to_dict(self, exclude=[Card.id]) | {

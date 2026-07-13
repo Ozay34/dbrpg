@@ -28,6 +28,7 @@ class AspectView(ViewFrame):
             self.config(bg=aspect.color)
             self.aspect_label.config(text=aspect.name, fg=font_color, bg=aspect.color)
             self.color_label.config(state="normal")
+            self.color_label.delete(0, "end")
             self.color_label.insert(tk.END, aspect.color)
             self.color_label.config(readonlybackground=aspect.color, fg=font_color, state="readonly")
 

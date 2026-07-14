@@ -127,7 +127,7 @@ class DeckEditor(EditorWindow):
         edit_button.pack(side="left", padx=5)
         remove_button = tk.Button(selection_panel, text="Remove", command=handle_remove)
         remove_button.pack(side="left", padx=5)
-        selection_panel.grid(row=0, column=4, padx=(40, 0))
+        selection_panel.grid(row=0, column=5, padx=(40, 0))
         selection_panel.grid_remove()
 
         def handle_select(deck_card_widget):

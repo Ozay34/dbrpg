@@ -199,6 +199,9 @@ class DeckEditor(EditorWindow):
             self._menu.add_checkbutton(label=deck.name, variable=var, command=open_deck(deck))
 
     def refresh(self):
+        if not self._window:
+            return
+
         self._window.title(self._title(self._deck))
         self._name_var.set(self._deck.name)
 

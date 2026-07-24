@@ -1,3 +1,4 @@
+import colorsys
 import os
 import subprocess
 from pathlib import Path
@@ -23,6 +24,14 @@ def contrast(color_hex):
     if y >= 128:
         return "#000000"
     return "#ffffff"
+
+def darken(color_hex, factor):
+    color_hex = color_hex.lstrip("#")
+    r, g, b = tuple(int(color_hex[i:i + 2], 16) for i in (0, 2, 4))
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    r, g, b = colorsys.hls_to_rgb(h, max(0.0, l * (1.0 - factor)), s)
+    hex_out = f"#{int(r):02x}{int(g):02x}{int(b):02x}"
+    return hex_out
 
 def to_roman_numerals(val):
     if val == 0:

@@ -90,7 +90,7 @@
         {% if line.text|length == 0 and lines|length == 1 %}
             <path d="M 16,{{ 283.5-10*(lines|length-1)-spacing.y }} v -6 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 6 q 0,4 -4,4 h {{ -condition.width }} q -4,0 -4,-4 z"
                   fill="{{ phase.color }}"
-                  stroke="#006ea1" />
+                  stroke="{{ tools.darken(phase.color, 0.5) }}" />
             <text font-size="{{ condition.size }}"
                   font-family="Cinzel-Bold"
                   fill="#ffffff"
@@ -105,7 +105,7 @@
                   fill-opacity="0.5" />
             <path d="M 16,{{ 273.5-10*(lines|length-1)-spacing.y }} v -10 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 10"
                   fill="{{ phase.color }}"
-                  stroke="#006ea1" />
+                  stroke="{{ tools.darken(phase.color, 0.5) }}" />
             <text font-size="{{ condition.size }}"
                   font-family="Cinzel-Bold"
                   fill="#ffffff"

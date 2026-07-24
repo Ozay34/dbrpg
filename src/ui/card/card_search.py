@@ -108,7 +108,7 @@ class CardSearch(ViewFrame):
         add_to_deck.grid(row=0, column=0, padx=2)
         self.selected_label = tk.Label(self.selection_panel, text="")
         self.selected_label.grid(row=0, column=1, padx=2, sticky="e")
-        export_selected = ExportMenu(self.selection_panel, lambda: self.selected, lambda: self.selected.name, text="Export")
+        export_selected = ExportMenu(self.selection_panel, lambda: [self.selected], lambda: self.selected.name, text="Export")
         export_selected.grid(row=0, column=2, padx=2)
         edit_button = tk.Button(self.selection_panel, text="Edit", command=handle_edit)
         edit_button.grid(row=0, column=3, padx=2)

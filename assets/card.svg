@@ -82,14 +82,14 @@
           dominant-baseline="middle">{{ name.text }}</text>
 
     {% set spacing = namespace(y=0) %}
-    {% for condition_keyword, effect in effects %}
+    {% for condition_keyword, phase, effect in effects %}
         {% set condition = tools.TextBounds(condition_keyword.keyword, 10, 'cinzel.bold.otf') %}
         {% set lines = effect.split("\n") %}
         {% set line = tools.TextBounds(lines[0], 8, 'cormorant.regular.otf') %}
         {% set main_width = 200 if lines|length > 1 else (condition.width+4, line.width)|max %}
         {% if line.text|length == 0 and lines|length == 1 %}
             <path d="M 16,{{ 283.5-10*(lines|length-1)-spacing.y }} v -6 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 6 q 0,4 -4,4 h {{ -condition.width }} q -4,0 -4,-4 z"
-                  fill="#009ae0"
+                  fill="{{ phase.color }}"
                   stroke="#006ea1" />
             <text font-size="{{ condition.size }}"
                   font-family="Cinzel-Bold"
@@ -104,7 +104,7 @@
                   stroke="#858585"
                   fill-opacity="0.5" />
             <path d="M 16,{{ 273.5-10*(lines|length-1)-spacing.y }} v -10 q 0,-4 4,-4 h {{ condition.width }} q 4,0 4,4 v 10"
-                  fill="#009ae0"
+                  fill="{{ phase.color }}"
                   stroke="#006ea1" />
             <text font-size="{{ condition.size }}"
                   font-family="Cinzel-Bold"

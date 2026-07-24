@@ -6,17 +6,13 @@ from playhouse.migrate import SqliteMigrator
 db = SqliteDatabase('data.db', pragmas={
     'journal_mode': 'wal',  # Allow readers while writer active.
     'cache_size': -64000,  # 64 MB page cache.
-    'foreign_keys': 1,  # Enforce FK constraints.
-})
-db_no_fk = SqliteDatabase('data.db', pragmas={
-    'journal_mode': 'wal',  # Allow readers while writer active.
-    'cache_size': -64000,  # 64 MB page cache.
 })
 
 def auto_create(model: Type[Model]):
-    model.create_table()
     table_name = model._meta.table_name
     schema, created = SchemaVersion.get_or_create(table=table_name)
+    if created:
+        model.create_table()
     model._created = created
     return model
 
@@ -36,7 +32,7 @@ class BaseModel(Model):
             schema = SchemaVersion.get(SchemaVersion.table == cls._meta.table_name)
             if schema.version < version and not cls._created:
                 with db.atomic():
-                    func(SqliteMigrator(db_no_fk))
+                    func(SqliteMigrator(db))
                     schema.version = version
                     schema.save()
             return func

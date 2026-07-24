@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 
 from peewee import CharField, IntegerField, AutoField, ForeignKeyField, TextField, ManyToManyField, fn, \
     CompositeKey
@@ -38,7 +39,6 @@ class Keyword(BaseModel):
     @classmethod
     def highlight(cls, line):
         return [(line, True)]
-
 
 @auto_create
 class Card(BaseModel):
@@ -119,12 +119,17 @@ CardAspect = Card.aspects.get_through_model()
 auto_create(CardAspect)
 
 @auto_create
+class Phase(BaseModel):
+
+    name = CharField(max_length=255, default="")
+    color = CharField(max_length=7, default="#000000")
+
+@auto_create
 class CardEffect(BaseModel):
 
-    class Meta:
-        primary_key = CompositeKey("card", "condition")
-
+    id = AutoField(primary_key=True)
     card = ForeignKeyField(Card, backref="effects", on_delete="CASCADE")
+    phase = ForeignKeyField(Phase)
     condition = ForeignKeyField(Keyword)
     description = TextField(default="")
     order = IntegerField(default=0)
@@ -134,3 +139,38 @@ class CardEffect(BaseModel):
             "condition": self.condition.keyword,
             "description": self.description
         }
+
+@CardEffect.migration(1)
+def add_phases(migrator):
+    clash, created = Phase.get_or_create(name="Clash", color="#ed4e4e")
+    respite, created = Phase.get_or_create(name="Respite", color="#009ae0")
+
+    class PreCardEffect(BaseModel):
+        class Meta:
+            db_table = "card_effect"
+            primary_key = CompositeKey("card", "condition")
+        card = ForeignKeyField(Card, on_delete="CASCADE")
+        condition = ForeignKeyField(Keyword)
+        description = TextField(default="")
+        order = IntegerField(default=0)
+    class PostCardEffect(BaseModel):
+        id = AutoField(primary_key=True)
+        card = ForeignKeyField(Card, on_delete="CASCADE")
+        phase = ForeignKeyField(Phase)
+        condition = ForeignKeyField(Keyword)
+        description = TextField(default="")
+        order = IntegerField(default=0)
+
+    PostCardEffect.create_table()
+    PostCardEffect.insert_many([{
+        PostCardEffect.card: effect.card,
+        PostCardEffect.phase: clash,
+        PostCardEffect.condition: effect.condition,
+        PostCardEffect.description: effect.description,
+        PostCardEffect.order: effect.order
+    } for effect in PreCardEffect.select()]).execute()
+
+    PreCardEffect.drop_table()
+    migrate(
+        migrator.rename_table("post_card_effect", "card_effect")
+    )

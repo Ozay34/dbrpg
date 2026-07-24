@@ -21,7 +21,7 @@ def render_card(card, aspects=None, effects=None, scale=1.0):
     if card.id and aspects is None:
         aspects = list(card.aspects)
     if card.id and effects is None:
-        effects = [(effect.condition, effect.description) for effect in card.effects.order_by(CardEffect.order)]
+        effects = [(effect.condition, effect.phase, effect.description) for effect in card.effects.order_by(CardEffect.order)]
     png = cairosvg.svg2png(bytestring=template.render(
         card=card,
         aspects=aspects or [],

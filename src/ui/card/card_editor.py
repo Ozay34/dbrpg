@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, TclError
 from tkinter.colorchooser import askcolor
 
-from data.card import Aspect, Card, Keyword, CardEffect
+from data.card import Aspect, Card, Keyword, CardEffect, Phase
 from ui.card.card_image import CardImage
 from ui.components.editor_window import EditorWindow
 
@@ -22,14 +22,15 @@ class CardEditor(EditorWindow):
         if card.id:
             self.chosen_aspects.update(card.aspects)
 
+        phases = Phase.select()
         keywords = Keyword.select()
-        self.card_effects = [(keywords[0] if len(keywords) > 0 else None,"")]
+        self.card_effects = [(keywords[0] if len(keywords) > 0 else None, phases[0] if len(phases) > 0 else None, "")]
         active_effect = 0
         if card.id:
-            self.card_effects = [(effect.condition, effect.description) for effect in card.effects]
+            self.card_effects = [(effect.condition, effect.phase, effect.description) for effect in card.effects]
             # Shouldn't ever be empty unless something goes wrong like partially deleted records
             if len(self.card_effects) == 0:
-                self.card_effects = [(keywords[0] if len(keywords) > 0 else None, "")]
+                self.card_effects = [(keywords[0] if len(keywords) > 0 else None, phases[0] if len(phases) > 0 else None, "")]
 
         def refresh():
             card_image.display(card, aspects=self.chosen_aspects, effects=self.card_effects)
@@ -114,13 +115,19 @@ class CardEditor(EditorWindow):
         effect_frame = tk.Frame(window)
         def handle_effect(*args):
             condition_keyword = Keyword.get(keyword=condition_input.get())
-            self.card_effects[active_effect] = (condition_keyword, effect_input.get("1.0", "end-1c"))
+            phase = Phase.get(name=phase_input.get())
+            self.card_effects[active_effect] = (condition_keyword, phase, effect_input.get("1.0", "end-1c"))
             refresh()
 
         effect_condition_panel = tk.Frame(effect_frame)
         effect_label = tk.Label(effect_condition_panel, text="Effect")
         effect_label.pack(side=tk.LEFT)
 
+        phase_input = ttk.Combobox(effect_condition_panel, width=10, values=[phase.name for phase in phases], state="readonly")
+        phase_input.pack(side=tk.LEFT, padx=2)
+        phase_input.bind("<<ComboboxSelected>>", handle_effect)
+        if len(phases) > 0:
+            phase_input.set(phases[0].name)
         condition_input = ttk.Combobox(effect_condition_panel, values=[keyword.keyword for keyword in keywords])
         condition_input.pack(side=tk.LEFT, padx=2)
         condition_input.bind("<<ComboboxSelected>>", handle_effect)
@@ -132,8 +139,10 @@ class CardEditor(EditorWindow):
         def refresh_effect():
             if self.card_effects[active_effect][0]:
                 condition_input.set(self.card_effects[active_effect][0].keyword)
+            if self.card_effects[active_effect][1]:
+                phase_input.set(self.card_effects[active_effect][1].name)
             effect_input.delete("0.0", tk.END)
-            effect_input.insert(tk.END, self.card_effects[active_effect][1])
+            effect_input.insert(tk.END, self.card_effects[active_effect][2])
 
             if active_effect > 0:
                 swap_button.grid()
@@ -158,7 +167,7 @@ class CardEditor(EditorWindow):
             nonlocal active_effect
             active_effect += 1
             if active_effect == len(self.card_effects):
-                self.card_effects.append((keywords[0] if len(keywords) > 0 else None, ""))
+                self.card_effects.append((keywords[0] if len(keywords) > 0 else None, phases[0] if len(phases) > 0 else None, ""))
                 refresh()
             refresh_effect()
         def handle_del():
@@ -208,6 +217,6 @@ class CardEditor(EditorWindow):
             card.save()  # Pre-save to generate ID so we can use foreign keys
         card.aspects = list(self.chosen_aspects)
         CardEffect.delete().where(CardEffect.card == card).execute()
-        for i, (keyword, desc) in enumerate(self.card_effects):
-            CardEffect.create(condition=keyword, card=card, description=desc, order=i)
+        for i, (keyword, phase, desc) in enumerate(self.card_effects):
+            CardEffect.create(condition=keyword, phase=phase, card=card, description=desc, order=i)
         card.save()

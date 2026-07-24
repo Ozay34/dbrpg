@@ -64,7 +64,6 @@ class Card(BaseModel):
                 card = Card.create(name=card_dict["name"], tier=card_dict["tier"], color=card_dict["color"])
                 card.aspects = list(Aspect.select().where(Aspect.name << card_dict["aspects"]))
                 for i, effect_dict in enumerate(card_dict["effects"]):
-                    print(effect_dict)
                     phase = Phase.get(name=effect_dict["phase"])
                     condition = Keyword.get(keyword=effect_dict["condition"])
                     CardEffect.create(phase=phase, condition=condition, card=card, description=effect_dict["description"], order=i)

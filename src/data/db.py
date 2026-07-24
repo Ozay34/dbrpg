@@ -1,9 +1,13 @@
+import os
+from tkinter.filedialog import askopenfilename
 from typing import Type
 
 from peewee import SqliteDatabase, Model, IntegerField, CharField, ManyToManyFieldAccessor
 from playhouse.migrate import SqliteMigrator
 
-db = SqliteDatabase('data.db', pragmas={
+
+db_file = askopenfilename(initialdir=os.getcwd(), initialfile="data.db", filetypes=[("Sqlite", "*.db")])
+db = SqliteDatabase(db_file, pragmas={
     'journal_mode': 'wal',  # Allow readers while writer active.
     'cache_size': -64000,  # 64 MB page cache.
 })
